@@ -56,6 +56,8 @@ function startVirtualHub()
                 executablePath = "linux/64bits/VirtualHub";
             } else if (arch === 'ia32') {
                 executablePath = "linux/32bits/VirtualHub";
+            } else if (arch === 'arm64') {
+                executablePath = "linux/aarch64/VirtualHub";
             } else if (arch === 'armv7l') {
                 executablePath = "linux/armhf/VirtualHub";
             }
