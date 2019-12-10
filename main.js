@@ -14,9 +14,9 @@ function createWindow()
         webPreferences: {
             nodeIntegration: true
         },
-        autoHideMenuBar:true,
-        icon:"logo_black.png"
-        //fullscreen:true
+        autoHideMenuBar: true,
+        icon: "logo_black.png",
+        fullscreen: true
     });
     // and load the index.html of the app.
     win.loadFile('index.html');
@@ -36,25 +36,45 @@ function createWindow()
 }
 
 let child = require('child_process').execFile;
+let os = require("os");
 
 function startVirtualHub()
 {
-    let executablePath = "VirtualHub.exe";
-
-    child(executablePath, function (err, data) {
-        if (err) {
-            console.error(err);
-            return;
+    let arch = os.arch();
+    let ostype = os.type().toLowerCase();
+    let executablePath = "";
+    if (ostype.startsWith("win")) {
+        executablePath = "windows/VirtualHub.exe";
+    } else if (ostype === 'linux') {
+        if (arch === 'x64') {
+            executablePath = "linux/64bits/VirtualHub.exe";
+        } else if (arch === 'ia32') {
+            executablePath = "linux/32bits/VirtualHub.exe";
+        } else if (arch === 'armv7l') {
+            executablePath = "linux/armhf/VirtualHub.exe";
         }
+    } else if (ostype === 'darwin') {
+        executablePath = "osx/VirtualHub.exe";
+    }
 
-        console.log(data.toString());
-    });
+    if (executablePath !== "") {
+        console.log("Start VirtualHub (" + executablePath + ")");
+        child("VirtualHub/" + executablePath, function (err, data) {
+            if (err) {
+                console.error(err);
+                return;
+            }
+
+            console.log(data.toString());
+        });
+    }
+    createWindow();
 }
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on('ready', createWindow);
+app.on('ready', startVirtualHub);
 
 // Quit when all windows are closed.
 app.on('window-all-closed', () => {
