@@ -46,6 +46,7 @@ function startVirtualHub()
 {
     let start_vhub = !app.commandLine.hasSwitch('no_vhub');
 
+    console.log("Cur dir:", app.getAppPath());
     if (start_vhub) {
         let arch = os.arch();
         let ostype = os.type().toLowerCase();
@@ -67,9 +68,10 @@ function startVirtualHub()
         }
 
         if (executablePath !== "") {
-            console.log("Start VirtualHub (" + executablePath + ")");
-            vhub_process = execFile("VirtualHub/" + executablePath, ['-y'], function (error, stdout, stderr) {
-                if (vhub_ignore_error){
+            let full_path = "./VirtualHub/" + executablePath;
+            console.log("Start VirtualHub (" + full_path + ")");
+            vhub_process = execFile(full_path, ['-y'], {cwd: app.getAppPath()}, function (error, stdout, stderr) {
+                if (vhub_ignore_error) {
                     return;
                 }
                 if (error) {
@@ -91,7 +93,7 @@ function startVirtualHub()
 }
 
 //
-app.on('open-error-dialog', (event,arg) => {
+app.on('open-error-dialog', (event, arg) => {
     dialog.showErrorBox('An Error Message', arg)
 });
 
@@ -111,9 +113,9 @@ app.on('window-all-closed', () => {
 
 app.on('quit', () => {
     if (vhub_process != null) {
-        vhub_ignore_error= true;
+        vhub_ignore_error = true;
         vhub_process.kill('SIGKILL');
-        vhub_process=null;
+        vhub_process = null;
     }
 });
 app.on('activate', () => {
