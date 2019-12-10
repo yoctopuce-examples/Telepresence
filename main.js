@@ -40,6 +40,7 @@ function createWindow()
 let execFile = require('child_process').execFile;
 let os = require("os");
 let vhub_process = null;
+let vhub_ignore_error = false;
 
 function startVirtualHub()
 {
@@ -66,6 +67,9 @@ function startVirtualHub()
         if (executablePath !== "") {
             console.log("Start VirtualHub (" + executablePath + ")");
             vhub_process = execFile("VirtualHub/" + executablePath, ['-y'], function (error, stdout, stderr) {
+                if (vhub_ignore_error){
+                    return;
+                }
                 if (error) {
                     console.error(error);
                     dialog.showErrorBox('VirtualHub error', error);
@@ -105,7 +109,9 @@ app.on('window-all-closed', () => {
 
 app.on('quit', () => {
     if (vhub_process != null) {
+        vhub_ignore_error= true;
         vhub_process.kill('SIGKILL');
+        vhub_process=null;
     }
 });
 app.on('activate', () => {
