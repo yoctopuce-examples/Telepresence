@@ -7,22 +7,7 @@
 </head>
 <script>
     require('yoctolib-es2017/yocto_api.js');
-    require('yoctolib-es2017/yocto_anbutton.js');
-    require('yoctolib-es2017/yocto_buzzer.js');
-    require('yoctolib-es2017/yocto_led.js');
-
-    async function startDemo()
-    {
-        await YAPI.LogUnhandledPromiseRejections();
-
-        // Setup the API to use the VirtualHub on local machine
-        let errmsg = new YErrorMsg();
-        if (await YAPI.RegisterHub('127.0.0.1', errmsg) !== YAPI.SUCCESS) {
-            alert('Cannot contact VirtualHub on 127.0.0.1: ' + errmsg.msg);
-            return;
-        }
-        await refresh();
-    }
+    require('yoctolib-es2017/yocto_colorledcluster.js');
 
     async function refresh()
     {
@@ -74,33 +59,133 @@
         setTimeout(refresh, 2000);
     }
 
+    var serial_list = [];
+
+
+    function refresh_module_list()
+    {
+        let ul = document.getElementById('module_list');
+        ul.innerHTML = '';
+        for (let i = 0; i < serial_list.length; i++) {
+            let li = document.createElement("li");
+            li.appendChild(document.createTextNode(serial_list[i]));
+            ul.appendChild(li);
+        }
+    }
+
+    async function valueChangeCallBack(obj_fct, str_value)
+    {
+        // the field to update is stored in the function userData
+        let info = await obj_fct.get_userData();
+        document.getElementById(info.html_id).innerHTML = str_value + ' ' + info.unit;
+    }
+
+    var meteo_serial = '';
+    var color_leds = {};
+
+    async function deviceArrival(module)
+    {
+        let serial = await module.get_serialNumber();
+        serial_list[serial_list.length] = serial;
+        refresh_module_list();
+
+        let product = await module.get_productName();
+        if (product.startsWith("Yocto-Meteo") && meteo_serial === '') {
+            let tempSensor = YSensor.FindSensor(serial + ".temperature");
+            let humSensor = YSensor.FindSensor(serial + ".humidity");
+            let presSensor = YSensor.FindSensor(serial + ".pressure");
+            await tempSensor.set_userData({html_id: "temp", unit: await tempSensor.get_unit()});
+            await tempSensor.registerValueCallback(valueChangeCallBack);
+            await humSensor.set_userData({html_id: "hum", unit: await humSensor.get_unit()});
+            await humSensor.registerValueCallback(valueChangeCallBack);
+            await presSensor.set_userData({html_id: "pres", unit: await presSensor.get_unit()});
+            await presSensor.registerValueCallback(valueChangeCallBack);
+            meteo_serial = serial;
+        } else if (product.startsWith("Yocto-Color-V")) {
+            let color = YColorLedCluster.FindColorLedCluster(serial + ".colorLedCluster");
+            color_leds[serial] = color;
+            console.log(color_leds);
+        }
+
+
+    }
+
+    async function deviceRemoval(module)
+    {
+        let serial = await module.get_serialNumber();
+        serial_list = serial_list.filter(item => item !== serial);
+        refresh_module_list();
+        if (meteo_serial === serial) {
+            document.getElementById("temp").innerHTML = 'Offline';
+            document.getElementById("pres").innerHTML = 'Offline';
+            document.getElementById("hum").innerHTML = 'Offline';
+        }
+
+        if (serial in color_leds) {
+            delete color_leds[serial]
+        }
+        console.log(color_leds);
+    }
+
+    function handleHotPlug()
+    {
+        YAPI.SetTimeout(handleHotPlug, 1000);
+    }
+
+    async function startDemo()
+    {
+        await YAPI.LogUnhandledPromiseRejections();
+
+        // Setup the API to use the VirtualHub on local machine
+        let errmsg = new YErrorMsg();
+        if (await YAPI.RegisterHub('localhost', errmsg) !== YAPI.SUCCESS) {
+            alert('Cannot contact VirtualHub : ' + errmsg.msg);
+        }
+        await YAPI.RegisterDeviceArrivalCallback(deviceArrival);
+        await YAPI.RegisterDeviceRemovalCallback(deviceRemoval);
+        handleHotPlug()
+    }
+
+    async function setColor(int_rgb)
+    {
+        let serials = Object.keys(color_leds);
+        for (let i = 0; i < serials.length; i++) {
+            let led_cluster = color_leds[serials[i]];
+            led_cluster.rgb_move(0, 2, int_rgb, 500);
+        }
+
+    }
+
+
     startDemo();
 </script>
 
 <body>
 <h1>Yoctopuce and Electron demo examples</h1>
-<ul id="module_list" class="section">
+<div class="section">
+    <ul id="module_list">
 
-</ul>
+    </ul>
+</div>
 <div id="color_selector" class="section">
-    <button id="red">Red</button>
-    <button id="green">Green</button>
-    <button id="blue">Blue</button>
-    <button id="off">Off</button>
+    <button id="red" onclick="setColor(0xff0000)">Red</button>
+    <button id="green" onclick="setColor(0xff00)">Green</button>
+    <button id="blue" onclick="setColor(0xff)">Blue</button>
+    <button id="off" onclick="setColor(0)">Off</button>
 </div>
 <div id="meteo" class="section">
     <table>
         <tr class="element">
             <td class="icon"><img src="icons/temp_96.png" alt="Temperature"></td>
-            <td><span class="sensorvalue" id="temp">22°</span></td>
+            <td><span class="sensorvalue" id="temp">Offline</span></td>
         </tr>
         <tr class="element">
             <td class="icon"><img src="icons/hum_96.png" alt="Humidity"></td>
-            <td><span class="sensorvalue" id="hum">22%</span></td>
+            <td><span class="sensorvalue" id="hum">Offline</span></td>
         </tr>
         <tr class="element">
             <td class="icon"><img src="icons/cloud_96.png" alt="Pressure"></td>
-            <td><span class="sensorvalue" id="pres">334mbar</span></td>
+            <td><span class="sensorvalue" id="pres">Offline</span></td>
         </tr>
     </table>
 </div>
