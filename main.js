@@ -53,14 +53,14 @@ function startVirtualHub()
             executablePath = "windows/VirtualHub.exe";
         } else if (ostype === 'linux') {
             if (arch === 'x64') {
-                executablePath = "linux/64bits/VirtualHub.exe";
+                executablePath = "linux/64bits/VirtualHub";
             } else if (arch === 'ia32') {
-                executablePath = "linux/32bits/VirtualHub.exe";
+                executablePath = "linux/32bits/VirtualHub";
             } else if (arch === 'armv7l') {
-                executablePath = "linux/armhf/VirtualHub.exe";
+                executablePath = "linux/armhf/VirtualHub";
             }
         } else if (ostype === 'darwin') {
-            executablePath = "osx/VirtualHub.exe";
+            executablePath = "osx/VirtualHub";
         }
 
         if (executablePath !== "") {
