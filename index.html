@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" type="text/css" href="css/style.css">
+</head>
+<script>
+    require('yoctolib-es2017/yocto_api.js');
+    require('yoctolib-es2017/yocto_anbutton.js');
+    require('yoctolib-es2017/yocto_buzzer.js');
+    require('yoctolib-es2017/yocto_led.js');
+
+    async function startDemo()
+    {
+        await YAPI.LogUnhandledPromiseRejections();
+
+        // Setup the API to use the VirtualHub on local machine
+        let errmsg = new YErrorMsg();
+        if (await YAPI.RegisterHub('127.0.0.1', errmsg) !== YAPI.SUCCESS) {
+            alert('Cannot contact VirtualHub on 127.0.0.1: ' + errmsg.msg);
+            return;
+        }
+        await refresh();
+    }
+
+    async function refresh()
+    {
+        let serial = document.getElementById('serial').value;
+        console.log("do refresh:", serial);
+        if (serial === '') {
+
+            let buzzer = YBuzzer.FirstBuzzer();
+            if (buzzer) {
+                let module = await buzzer.module();
+                serial = await module.get_serialNumber();
+            }
+        }
+        console.log("do refresh2:", serial);
+        let buz = YBuzzer.FindBuzzer(serial + ".buzzer");
+        let led1 = YLed.FindLed(serial + ".led1");
+        let led2 = YLed.FindLed(serial + ".led2");
+        let button1 = YAnButton.FindAnButton(serial + ".anButton1");
+        let button2 = YAnButton.FindAnButton(serial + ".anButton2");
+
+
+        if (await buz.isOnline()) {
+            let frequency;
+            let b1 = (await button1.get_isPressed() === YAnButton.ISPRESSED_TRUE);
+            let b2 = (await button2.get_isPressed() === YAnButton.ISPRESSED_TRUE);
+            if (b1 || b2) {
+                let led;
+                if (b1) {
+                    led = led1;
+                    frequency = 1500;
+                } else {
+                    led = led2;
+                    frequency = 750;
+                }
+                await led.set_power(YLed.POWER_ON);
+                await led.set_luminosity(100);
+                await led.set_blinking(YLed.BLINKING_PANIC);
+                for (let i = 0; i < 5; i++) { // this can be done using sequence as well
+                    buz.set_frequency(frequency);
+                    buz.freqMove(2 * frequency, 250);
+                    await YAPI.Sleep(250);
+                }
+                await buz.set_frequency(0);
+                led.set_power(YLed.POWER_OFF);
+            }
+        } else {
+            console.log('Module not connected');
+        }
+        setTimeout(refresh, 2000);
+    }
+
+    startDemo();
+</script>
+
+<body>
+<h1>Yoctopuce and Electron demo examples</h1>
+<ul id="module_list" class="section">
+
+</ul>
+<div id="color_selector" class="section">
+    <button id="red">Red</button>
+    <button id="green">Green</button>
+    <button id="blue">Blue</button>
+    <button id="off">Off</button>
+</div>
+<div id="meteo" class="section">
+    <table>
+        <tr class="element">
+            <td class="icon"><img src="icons/temp_96.png" alt="Temperature"></td>
+            <td><span class="sensorvalue" id="temp">22°</span></td>
+        </tr>
+        <tr class="element">
+            <td class="icon"><img src="icons/hum_96.png" alt="Humidity"></td>
+            <td><span class="sensorvalue" id="hum">22%</span></td>
+        </tr>
+        <tr class="element">
+            <td class="icon"><img src="icons/cloud_96.png" alt="Pressure"></td>
+            <td><span class="sensorvalue" id="pres">334mbar</span></td>
+        </tr>
+    </table>
+</div>
+</body>
+</html>

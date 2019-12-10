@@ -1,0 +1,106 @@
+
+body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: white;
+    font-family: Arial, sans-serif;
+}
+
+h1 {
+    color: #606060;
+}
+
+.section {
+    margin: 16px;
+    width: 600px;
+    align-items: center;
+}
+
+
+table {
+    width: 100%;
+    border: 1px black solid;
+    padding: 16px;
+}
+
+td {
+}
+
+.element {
+    padding: 15px;
+    font-style: italic;
+    font-size: xx-large;
+}
+
+.sensorvalue {
+    text-align: right;
+}
+
+.icon {
+    text-align: center;
+}
+
+#color_selector {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-evenly;
+}
+
+button {
+    box-shadow: 0px 1px 0px 0px #f0f7fa;
+    border-radius: 6px;
+    display: inline-block;
+    cursor: pointer;
+    color: #ffffff;
+    font-size: 20px;
+    font-weight: bold;
+    padding: 9px 24px;
+    text-decoration: none;
+}
+
+button:hover {
+    background: linear-gradient(to bottom, #019ad2 5%, #33bdef 100%);
+    background-color: #019ad2;
+}
+
+button:active {
+    position: relative;
+    top: 1px;
+}
+
+#red {
+    background: linear-gradient(to bottom, #FFCDD2 5%, #F44336 100%);
+    background-color: #F44336;
+    border: 1px solid #D32F2F;
+
+    text-shadow: 0px -1px 0px rgb(120, 91, 91);
+}
+
+#green {
+    background: linear-gradient(to bottom, #C8E6C9 5%, #4CAF50 100%);
+    background-color: #4CAF50;
+    border: 1px solid #388E3C;
+
+    text-shadow: 0px -1px 0px rgb(91, 120, 91);
+}
+
+#blue {
+    background: linear-gradient(to bottom, #BBDEFB 5%,#2196F3 100%);
+    background-color: #2196F3;
+    border: 1px solid #1976D2;
+
+
+    text-shadow: 0px -1px 0px rgb(91, 91, 120);
+}
+
+#off {
+    background: linear-gradient(to bottom, #F5F5F5 5%, #9E9E9E 100%);
+    background-color: #9E9E9E;
+    border: 1px solid #616161;
+
+    text-shadow: 0px -1px 0px rgb(91, 91, 91);
+}
+
+
