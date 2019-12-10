@@ -1,4 +1,4 @@
-const {app, BrowserWindow, Tray} = require('electron');
+const {app, BrowserWindow, dialog} = require('electron');
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let win;
@@ -6,6 +6,8 @@ let win;
 function createWindow()
 {
     //startVirtualHub();
+
+    let isfull = app.commandLine.hasSwitch('fullscreen');
 
     // Create the browser window.
     win = new BrowserWindow({
@@ -16,15 +18,15 @@ function createWindow()
         },
         autoHideMenuBar: true,
         icon: "logo_black.png",
-        fullscreen: true
+        fullscreen: isfull
     });
     // and load the index.html of the app.
     win.loadFile('index.html');
-    //win.setMenu(null);
-    //win.removeMenu();
 
     // Open the DevTools.
-    //win.webContents.openDevTools();
+    if (app.commandLine.hasSwitch('debug')) {
+        win.webContents.openDevTools();
+    }
 
     // Emitted when the window is closed.
     win.on('closed', () => {
@@ -35,38 +37,49 @@ function createWindow()
     })
 }
 
-let child = require('child_process').execFile;
+let execFile = require('child_process').execFile;
 let os = require("os");
+let vhub_process = null;
 
 function startVirtualHub()
 {
-    let arch = os.arch();
-    let ostype = os.type().toLowerCase();
-    let executablePath = "";
-    if (ostype.startsWith("win")) {
-        executablePath = "windows/VirtualHub.exe";
-    } else if (ostype === 'linux') {
-        if (arch === 'x64') {
-            executablePath = "linux/64bits/VirtualHub.exe";
-        } else if (arch === 'ia32') {
-            executablePath = "linux/32bits/VirtualHub.exe";
-        } else if (arch === 'armv7l') {
-            executablePath = "linux/armhf/VirtualHub.exe";
-        }
-    } else if (ostype === 'darwin') {
-        executablePath = "osx/VirtualHub.exe";
-    }
+    let start_vhub = !app.commandLine.hasSwitch('no_vhub');
 
-    if (executablePath !== "") {
-        console.log("Start VirtualHub (" + executablePath + ")");
-        child("VirtualHub/" + executablePath, function (err, data) {
-            if (err) {
-                console.error(err);
-                return;
+    if (start_vhub) {
+        let arch = os.arch();
+        let ostype = os.type().toLowerCase();
+        let executablePath = "";
+        if (ostype.startsWith("win")) {
+            executablePath = "windows/VirtualHub.exe";
+        } else if (ostype === 'linux') {
+            if (arch === 'x64') {
+                executablePath = "linux/64bits/VirtualHub.exe";
+            } else if (arch === 'ia32') {
+                executablePath = "linux/32bits/VirtualHub.exe";
+            } else if (arch === 'armv7l') {
+                executablePath = "linux/armhf/VirtualHub.exe";
             }
+        } else if (ostype === 'darwin') {
+            executablePath = "osx/VirtualHub.exe";
+        }
 
-            console.log(data.toString());
-        });
+        if (executablePath !== "") {
+            console.log("Start VirtualHub (" + executablePath + ")");
+            vhub_process = execFile("VirtualHub/" + executablePath, ['-y'], function (error, stdout, stderr) {
+                if (error) {
+                    console.error(error);
+                    dialog.showErrorBox('VirtualHub error', error);
+                    return;
+                }
+                if (stderr) {
+                    console.log("ERR:" + stderr.toString());
+                    dialog.showErrorBox('VirtualHub error', stderr.toString());
+                } else {
+                    console.log(stdout.toString());
+                }
+            });
+
+        }
     }
     createWindow();
 }
@@ -85,6 +98,11 @@ app.on('window-all-closed', () => {
     }
 });
 
+app.on('quit', () => {
+    if (vhub_process != null) {
+        vhub_process.kill('SIGKILL');
+    }
+});
 app.on('activate', () => {
     // On macOS it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.

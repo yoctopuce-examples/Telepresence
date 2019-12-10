@@ -1,0 +1,10 @@
+/demo_electron-darwin-x64/
+/demo_electron-linux-arm64/
+/demo_electron-linux-armv7l/
+/demo_electron-linux-ia32/
+/demo_electron-linux-x64/
+/demo_electron-mas-x64/
+/demo_electron-win32-arm64/
+/demo_electron-win32-ia32/
+/demo_electron-win32-x64/
+/node_modules/

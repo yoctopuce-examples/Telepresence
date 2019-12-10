@@ -140,6 +140,9 @@
         let errmsg = new YErrorMsg();
         if (await YAPI.RegisterHub('localhost', errmsg) !== YAPI.SUCCESS) {
             alert('Cannot contact VirtualHub : ' + errmsg.msg);
+
+
+
         }
         await YAPI.RegisterDeviceArrivalCallback(deviceArrival);
         await YAPI.RegisterDeviceRemovalCallback(deviceRemoval);
