@@ -8,7 +8,10 @@ body {
 }
 
 h1 {
-    color: #606060;
+    color: #494949;
+    font-weight: bold;
+    font-stretch: extra-expanded;
+    border-bottom: 3px solid  #494949;
 }
 
 .section {
@@ -48,59 +51,85 @@ td {
     justify-content: space-evenly;
 }
 
+
+.button4 {
+    background-color: white;
+    color: black;
+    border: 2px solid #e7e7e7;
+}
+
+.button4:hover {background-color: #e7e7e7;}
+
+.button5 {
+    background-color: white;
+    color: black;
+    border: 2px solid #555555;
+}
+
+.button5:hover {
+    background-color: #555555;
+    color: white;
+}
+
+
+h2 {
+    margin-top: 32px;
+    width: 600px;
+    text-align: left;
+    color: #606060;
+
+}
+
 button {
-    box-shadow: 0px 1px 0px 0px #f0f7fa;
-    border-radius: 6px;
-    display: inline-block;
-    cursor: pointer;
-    color: #ffffff;
-    font-size: 20px;
-    font-weight: bold;
-    padding: 9px 24px;
+    border: none;
+    color: white;
+    padding: 16px 32px;
+    text-align: center;
     text-decoration: none;
-}
-
-button:hover {
-    background: linear-gradient(to bottom, #019ad2 5%, #33bdef 100%);
-    background-color: #019ad2;
-}
-
-button:active {
-    position: relative;
-    top: 1px;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    transition-duration: 0.4s;
+    cursor: pointer;
 }
 
 #red {
-    background: linear-gradient(to bottom, #FFCDD2 5%, #F44336 100%);
-    background-color: #F44336;
-    border: 1px solid #D32F2F;
+    background-color: #f44336;
+    color: white;
+    border: 2px solid #f44336;
+}
 
-    text-shadow: 0px -1px 0px rgb(120, 91, 91);
+
+#red:hover, #green:hover, #blue:hover {
+    background-color: white;
+    color: black;
 }
 
 #green {
-    background: linear-gradient(to bottom, #C8E6C9 5%, #4CAF50 100%);
     background-color: #4CAF50;
-    border: 1px solid #388E3C;
-
-    text-shadow: 0px -1px 0px rgb(91, 120, 91);
+    color: white;
+    border: 2px solid #4CAF50;
 }
+
 
 #blue {
-    background: linear-gradient(to bottom, #BBDEFB 5%,#2196F3 100%);
-    background-color: #2196F3;
-    border: 1px solid #1976D2;
-
-
-    text-shadow: 0px -1px 0px rgb(91, 91, 120);
+    background-color: #008CBA;
+    color: white;
+    border: 2px solid #008CBA;
 }
 
-#off {
-    background: linear-gradient(to bottom, #F5F5F5 5%, #9E9E9E 100%);
-    background-color: #9E9E9E;
-    border: 1px solid #616161;
 
-    text-shadow: 0px -1px 0px rgb(91, 91, 91);
+
+#off:hover {
+    background-color: white;
+    color: black;
+}
+
+
+#off {
+    background-color: #555555;
+    color: white;
+    border: 2px solid #555555;
 }
 
 

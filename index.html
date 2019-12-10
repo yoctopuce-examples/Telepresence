@@ -2,65 +2,17 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Electron app with Yoctopuce library</title>
     <link rel="stylesheet" type="text/css" href="css/style.css">
 </head>
 <script>
+    const {ipcRenderer} = require('electron');
     require('yoctolib-es2017/yocto_api.js');
     require('yoctolib-es2017/yocto_colorledcluster.js');
 
-    async function refresh()
-    {
-        let serial = document.getElementById('serial').value;
-        console.log("do refresh:", serial);
-        if (serial === '') {
-
-            let buzzer = YBuzzer.FirstBuzzer();
-            if (buzzer) {
-                let module = await buzzer.module();
-                serial = await module.get_serialNumber();
-            }
-        }
-        console.log("do refresh2:", serial);
-        let buz = YBuzzer.FindBuzzer(serial + ".buzzer");
-        let led1 = YLed.FindLed(serial + ".led1");
-        let led2 = YLed.FindLed(serial + ".led2");
-        let button1 = YAnButton.FindAnButton(serial + ".anButton1");
-        let button2 = YAnButton.FindAnButton(serial + ".anButton2");
-
-
-        if (await buz.isOnline()) {
-            let frequency;
-            let b1 = (await button1.get_isPressed() === YAnButton.ISPRESSED_TRUE);
-            let b2 = (await button2.get_isPressed() === YAnButton.ISPRESSED_TRUE);
-            if (b1 || b2) {
-                let led;
-                if (b1) {
-                    led = led1;
-                    frequency = 1500;
-                } else {
-                    led = led2;
-                    frequency = 750;
-                }
-                await led.set_power(YLed.POWER_ON);
-                await led.set_luminosity(100);
-                await led.set_blinking(YLed.BLINKING_PANIC);
-                for (let i = 0; i < 5; i++) { // this can be done using sequence as well
-                    buz.set_frequency(frequency);
-                    buz.freqMove(2 * frequency, 250);
-                    await YAPI.Sleep(250);
-                }
-                await buz.set_frequency(0);
-                led.set_power(YLed.POWER_OFF);
-            }
-        } else {
-            console.log('Module not connected');
-        }
-        setTimeout(refresh, 2000);
-    }
-
-    var serial_list = [];
-
+    let serial_list = [];
+    let meteo_serial = '';
+    let color_leds = {};
 
     function refresh_module_list()
     {
@@ -79,9 +31,6 @@
         let info = await obj_fct.get_userData();
         document.getElementById(info.html_id).innerHTML = str_value + ' ' + info.unit;
     }
-
-    var meteo_serial = '';
-    var color_leds = {};
 
     async function deviceArrival(module)
     {
@@ -102,12 +51,9 @@
             await presSensor.registerValueCallback(valueChangeCallBack);
             meteo_serial = serial;
         } else if (product.startsWith("Yocto-Color-V")) {
-            let color = YColorLedCluster.FindColorLedCluster(serial + ".colorLedCluster");
-            color_leds[serial] = color;
+            color_leds[serial] = YColorLedCluster.FindColorLedCluster(serial + ".colorLedCluster");
             console.log(color_leds);
         }
-
-
     }
 
     async function deviceRemoval(module)
@@ -120,11 +66,9 @@
             document.getElementById("pres").innerHTML = 'Offline';
             document.getElementById("hum").innerHTML = 'Offline';
         }
-
         if (serial in color_leds) {
             delete color_leds[serial]
         }
-        console.log(color_leds);
     }
 
     function handleHotPlug()
@@ -135,14 +79,12 @@
     async function startDemo()
     {
         await YAPI.LogUnhandledPromiseRejections();
-
+        await YAPI.DisableExceptions();
         // Setup the API to use the VirtualHub on local machine
         let errmsg = new YErrorMsg();
         if (await YAPI.RegisterHub('localhost', errmsg) !== YAPI.SUCCESS) {
-            alert('Cannot contact VirtualHub : ' + errmsg.msg);
-
-
-
+            ipcRenderer.send('open-error-dialog', errmsg.msg);
+            return;
         }
         await YAPI.RegisterDeviceArrivalCallback(deviceArrival);
         await YAPI.RegisterDeviceRemovalCallback(deviceRemoval);
@@ -164,18 +106,21 @@
 </script>
 
 <body>
-<h1>Yoctopuce and Electron demo examples</h1>
+<h1>Electron app with Yoctopuce library</h1>
+<h2 class="section_title">Module inventory:</h2>
 <div class="section">
     <ul id="module_list">
 
     </ul>
 </div>
+<h2 class="section_title">Yocto-Color-V2:</h2>
 <div id="color_selector" class="section">
     <button id="red" onclick="setColor(0xff0000)">Red</button>
     <button id="green" onclick="setColor(0xff00)">Green</button>
     <button id="blue" onclick="setColor(0xff)">Blue</button>
     <button id="off" onclick="setColor(0)">Off</button>
 </div>
+<h2 class="section_title">Yocto-Meteo:</h2>
 <div id="meteo" class="section">
     <table>
         <tr class="element">

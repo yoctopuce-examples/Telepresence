@@ -1,4 +1,4 @@
-const {app, BrowserWindow, dialog} = require('electron');
+const {app, BrowserWindow, ipcMain, dialog} = require('electron');
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let win;
@@ -83,6 +83,11 @@ function startVirtualHub()
     }
     createWindow();
 }
+
+//
+app.on('open-error-dialog', (event,arg) => {
+    dialog.showErrorBox('An Error Message', arg)
+});
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.

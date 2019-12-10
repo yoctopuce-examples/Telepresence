@@ -8,3 +8,4 @@
 /demo_electron-win32-ia32/
 /demo_electron-win32-x64/
 /node_modules/
+/.idea/
