@@ -1,5 +1,6 @@
 {
   "name": "demo_electron",
+  "ProductName": "Electron demo app",
   "version": "1.0.0",
   "main": "main.js",
   "scripts": {

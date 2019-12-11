@@ -74,17 +74,18 @@ function startVirtualHub()
                 if (vhub_ignore_error) {
                     return;
                 }
-                if (error) {
-                    console.error(error);
-                    dialog.showErrorBox('VirtualHub error', error);
-                    return;
-                }
                 if (stderr) {
                     console.log("ERR:" + stderr.toString());
                     dialog.showErrorBox('VirtualHub error', stderr.toString());
                 } else {
                     console.log(stdout.toString());
                 }
+                if (error) {
+                    console.error(error);
+                    dialog.showErrorBox('VirtualHub error', error.toString());
+                    return;
+                }
+           
             });
 
         }
