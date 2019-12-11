@@ -4,12 +4,13 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "package-mac": "electron-packager . --overwrite --platform=darwin --arch=x64 --icon=logo_black.png - --out=release-builds",
-    "package-win": "electron-packager . --overwrite --platform=win32 --arch=ia32 --icon=logo_black.ico --out=release-builds ",
-    "package-lin-x64": "electron-packager . --overwrite --platform=linux --arch=x64 --icon=logo_black.png --out=release-builds",
-    "package-lin-ia32": "electron-packager . --overwrite --platform=linux --arch=ia32 --icon=logo_black.png --out=release-builds",
-    "package-lin-arm": "electron-packager . --overwrite --platform=linux --arch=armv7l --icon=logo_black.png --out=release-builds",
-    "package-lin-arm64": "electron-packager . --overwrite --platform=linux --arch=arm64 --icon=logo_black.png --out=release-builds"
+    "start_as_root": "electron . --no-sandbox",
+    "package-mac": "electron-packager . --overwrite --platform=darwin --arch=x64 --icon=icons/logo_black_1024.png - --out=release-builds",
+    "package-win": "electron-packager . --overwrite --platform=win32 --arch=ia32 --icon=icons/logo_black.ico --out=release-builds ",
+    "package-lin-x64": "electron-packager . --overwrite --platform=linux --arch=x64 --icon=icons/logo_black_1024.png --out=release-builds",
+    "package-lin-ia32": "electron-packager . --overwrite --platform=linux --arch=ia32 --icon=icons/logo_black_1024.png --out=release-builds",
+    "package-lin-arm": "electron-packager . --overwrite --platform=linux --arch=armv7l --icon=icons/logo_black_1024.png --out=release-builds",
+    "package-lin-arm64": "electron-packager . --overwrite --platform=linux --arch=arm64 --icon=icons/logo_black_1024.png --out=release-builds"
   },
   "dependencies": {
     "yoctolib-es2017": "^1.10.38168"

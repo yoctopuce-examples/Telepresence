@@ -12,12 +12,12 @@ function createWindow()
     // Create the browser window.
     win = new BrowserWindow({
         width: 800,
-        height: 600,
+        height: 400,
         webPreferences: {
             nodeIntegration: true
         },
         autoHideMenuBar: true,
-        icon: "logo_black.png",
+        icon: "icons/logo_black_64.png",
         fullscreen: isfull
     });
     // and load the index.html of the app.
