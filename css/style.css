@@ -15,7 +15,7 @@ h1 {
 }
 
 .section {
-    margin: 16px;
+    margin-bottom: 16px;
     width: 600px;
     align-items: center;
 }
@@ -23,7 +23,6 @@ h1 {
 
 table {
     width: 100%;
-    border: 1px black solid;
     padding: 16px;
 }
 
@@ -33,7 +32,7 @@ td {
 .element {
     padding: 15px;
     font-style: italic;
-    font-size: xx-large;
+    font-size: x-large;
 }
 
 .sensorvalue {
@@ -73,11 +72,9 @@ td {
 
 
 h2 {
-    margin-top: 32px;
     width: 600px;
     text-align: left;
     color: #606060;
-
 }
 
 button {

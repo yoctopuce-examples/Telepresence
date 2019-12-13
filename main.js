@@ -5,14 +5,12 @@ let win;
 
 function createWindow()
 {
-    //startVirtualHub();
-
     let isfull = app.commandLine.hasSwitch('fullscreen');
 
     // Create the browser window.
     win = new BrowserWindow({
         width: 800,
-        height: 400,
+        height: 600,
         webPreferences: {
             nodeIntegration: true
         },
@@ -83,17 +81,13 @@ function startVirtualHub()
                 if (error) {
                     console.error(error);
                     dialog.showErrorBox('VirtualHub error', error.toString());
-                    return;
                 }
-           
             });
-
         }
     }
     createWindow();
 }
 
-//
 app.on('open-error-dialog', (event, arg) => {
     dialog.showErrorBox('An Error Message', arg)
 });
