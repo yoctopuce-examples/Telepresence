@@ -6,7 +6,7 @@
   "scripts": {
     "start": "electron .",
     "start_as_root": "electron . --no-sandbox",
-    "package-mac": "electron-packager . --overwrite --platform=darwin --arch=x64  --out=release-builds",
+    "package-mac": "electron-packager . --overwrite --platform=darwin --arch=x64 --icon=icons/logo_black.icns --out=release-builds",
     "package-win": "electron-packager . --overwrite --platform=win32 --arch=ia32 --icon=icons/logo_black.ico --out=release-builds",
     "package-lin-x64": "electron-packager . --overwrite --platform=linux --arch=x64 --icon=icons/logo_black_1024.png --out=release-builds",
     "package-lin-ia32": "electron-packager . --overwrite --platform=linux --arch=ia32 --icon=icons/logo_black_1024.png --out=release-builds",
