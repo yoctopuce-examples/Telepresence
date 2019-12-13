@@ -7,6 +7,8 @@ the USB ports. If a Yocto-Meteo is connected, the application shows the
 live value of the sensors, and if a Yocto-Color-V2 is connected, you can 
 control the leds from the interface.
 
+See more on [yoctopuce.com](https://www.yoctopuce.com/EN/article/using-yoctopuce-modules-with-electron)
+
 
 ## Test the application
 
