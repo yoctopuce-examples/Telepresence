@@ -58,7 +58,7 @@ function startVirtualHub()
                 executablePath = "linux/32bits/VirtualHub";
             } else if (arch === 'arm64') {
                 executablePath = "linux/aarch64/VirtualHub";
-            } else if (arch === 'armv7l') {
+            } else if (arch === 'arm') {
                 executablePath = "linux/armhf/VirtualHub";
             }
         } else if (ostype === 'darwin') {
@@ -85,7 +85,6 @@ function startVirtualHub()
             });
         }
     }
-    createWindow();
 }
 
 app.on('open-error-dialog', (event, arg) => {
@@ -95,7 +94,10 @@ app.on('open-error-dialog', (event, arg) => {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on('ready', startVirtualHub);
+app.on('ready', function(){
+    startVirtualHub();
+    createWindow();
+});
 
 // Quit when all windows are closed.
 app.on('window-all-closed', () => {
