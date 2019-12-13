@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Electron app with Yoctopuce library</title>
+    <title>Electron application with support for Yoctopuce devices</title>
     <link rel="stylesheet" type="text/css" href="css/style.css">
 </head>
 <script>
@@ -79,11 +79,12 @@
     async function startDemo()
     {
         await YAPI.LogUnhandledPromiseRejections();
-        await YAPI.DisableExceptions();
-        // Setup the API to use the VirtualHub on local machine
-        let errmsg = new YErrorMsg();
-        if (await YAPI.RegisterHub('localhost', errmsg) !== YAPI.SUCCESS) {
-            ipcRenderer.send('open-error-dialog', errmsg.msg);
+        try {
+            // Setup the API to use the VirtualHub on local machine
+            await YAPI.RegisterHub('localhost');
+        } catch (err) {
+            console.log(err);
+            ipcRenderer.send('open-error-dialog', err.msg);
             return;
         }
         await YAPI.RegisterDeviceArrivalCallback(deviceArrival);
@@ -106,7 +107,7 @@
 </script>
 
 <body>
-<h1>Electron app with Yoctopuce library</h1>
+<h1>Electron application with support for Yoctopuce devices</h1>
 <h2 class="section_title">Module inventory:</h2>
 <div class="section">
     <ul id="module_list">
