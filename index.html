@@ -8,14 +8,16 @@
 <script>
     const {ipcRenderer} = require('electron');
     require('yoctolib-es2017/yocto_api.js');
+    require('yoctolib-es2017/yocto_rangefinder.js');
     require('yoctolib-es2017/yocto_colorledcluster.js');
 
     let serial_list = [];
-    let meteo_serial = '';
-    let color_leds = {};
+    let was_present = false;
+    let min_distance = 400;
+    let max_distance = 600;
+    let remote_url = "";
 
-    function refresh_module_list()
-    {
+    function refresh_module_list() {
         let ul = document.getElementById('module_list');
         ul.innerHTML = '';
         for (let i = 0; i < serial_list.length; i++) {
@@ -25,59 +27,80 @@
         }
     }
 
-    async function valueChangeCallBack(obj_fct, str_value)
-    {
-        // the field to update is stored in the function userData
-        let info = await obj_fct.get_userData();
-        document.getElementById(info.html_id).innerHTML = str_value + ' ' + info.unit;
+    async function updatePresence(bool_ispresent) {
+        let color;
+        let elementById = document.getElementById("message");
+
+        if (bool_ispresent) {
+            document.body.style.background = 'green';
+            elementById.innerHTML = 'Present';
+            color = 0x00ff00;
+        } else {
+            document.body.style.background = 'red';
+            elementById.innerHTML = 'Absent';
+            color = 0xff0000;
+        }
+
+        let ledCluster = YColorLedCluster.FirstColorLedCluster();
+        while (ledCluster != null) {
+            let activeLedCount = await ledCluster.get_activeLedCount();
+            await ledCluster.rgb_move(0, activeLedCount, color, 500);
+            ledCluster = await ledCluster.nextColorLedCluster();
+        }
+
     }
 
-    async function deviceArrival(module)
-    {
+
+    async function rfChangeCallBack(obj_fct, measure) {
+        let dist = measure.get_averageValue();
+        let elementById = document.getElementById('live_val');
+        elementById.innerText = dist + "mm";
+        let presence;
+        if (dist > max_distance || dist < min_distance) {
+            presence = false;
+        } else {
+            presence = true;
+        }
+        if (presence !== was_present) {
+            updatePresence(presence);
+            was_present = presence;
+        }
+    }
+
+    async function deviceArrival(module) {
         let serial = await module.get_serialNumber();
         serial_list[serial_list.length] = serial;
         refresh_module_list();
 
         let product = await module.get_productName();
-        if (product.startsWith("Yocto-Meteo") && meteo_serial === '') {
-            let tempSensor = YSensor.FindSensor(serial + ".temperature");
-            let humSensor = YSensor.FindSensor(serial + ".humidity");
-            let presSensor = YSensor.FindSensor(serial + ".pressure");
-            await tempSensor.set_userData({html_id: "temp", unit: await tempSensor.get_unit()});
-            await tempSensor.registerValueCallback(valueChangeCallBack);
-            await humSensor.set_userData({html_id: "hum", unit: await humSensor.get_unit()});
-            await humSensor.registerValueCallback(valueChangeCallBack);
-            await presSensor.set_userData({html_id: "pres", unit: await presSensor.get_unit()});
-            await presSensor.registerValueCallback(valueChangeCallBack);
-            meteo_serial = serial;
-        } else if (product.startsWith("Yocto-Color-V")) {
-            color_leds[serial] = YColorLedCluster.FindColorLedCluster(serial + ".colorLedCluster");
-            console.log(color_leds);
+        if (product.startsWith("Yocto-RangeFinder")) {
+            let rf = YRangeFinder.FindRangeFinder(serial + ".rangeFinder1");
+            await rf.set_rangeFinderMode(YRangeFinder.RANGEFINDERMODE_DEFAULT)
+            await rf.set_timeFrame(1000);
+            await rf.set_reportFrequency("4/s");
+            await rf.registerTimedReportCallback(rfChangeCallBack);
+        } else if (product.startsWith("Yocto-Color-V2")) {
+
         }
     }
 
-    async function deviceRemoval(module)
-    {
+    async function deviceRemoval(module) {
         let serial = await module.get_serialNumber();
         serial_list = serial_list.filter(item => item !== serial);
         refresh_module_list();
-        if (meteo_serial === serial) {
-            document.getElementById("temp").innerHTML = 'Offline';
-            document.getElementById("pres").innerHTML = 'Offline';
-            document.getElementById("hum").innerHTML = 'Offline';
+        if (rf_serial === serial) {
+            document.getElementById("message").innerHTML = 'No Yocto-RangeFinder';
         }
         if (serial in color_leds) {
             delete color_leds[serial]
         }
     }
 
-    function handleHotPlug()
-    {
+    function handleHotPlug() {
         YAPI.SetTimeout(handleHotPlug, 1000);
     }
 
-    async function startDemo()
-    {
+    async function startDemo() {
         await YAPI.LogUnhandledPromiseRejections();
         try {
             // Setup the API to use the VirtualHub on local machine
@@ -89,49 +112,87 @@
         }
         await YAPI.RegisterDeviceArrivalCallback(deviceArrival);
         await YAPI.RegisterDeviceRemovalCallback(deviceRemoval);
-        handleHotPlug()
+        await settingsChanged();
+        handleHotPlug();
     }
 
-    async function setColor(int_rgb)
-    {
-        let serials = Object.keys(color_leds);
-        for (let i = 0; i < serials.length; i++) {
-            let led_cluster = color_leds[serials[i]];
-            led_cluster.rgb_move(0, 2, int_rgb, 500);
+    async function settingsChanged() {
+        let inp = document.getElementById('min_distance');
+        let value = parseInt(inp.value);
+        min_distance = value
+        document.getElementById('minval').innerText = value + " mm";
+        inp = document.getElementById('max_distance');
+        value = parseInt(inp.value);
+        max_distance = value
+        document.getElementById('maxval').innerText = value + " mm";
+        let url = document.getElementById('url').value;
+        if (remote_url !== url) {
+            try {
+                await YAPI.UnregisterHub(remote_url);
+                remote_url = url;
+                await YAPI.RegisterHub(url);
+            } catch (err) {
+                console.log(err);
+                ipcRenderer.send('open-error-dialog', err.msg);
+            }
+        }
+    }
+
+    var show_list = false;
+
+    function toggleList() {
+        let list = document.getElementById('module_list');
+        let listhead = document.getElementById('listhead');
+        if (!show_list) {
+            list.style.display = 'none';
+            listhead.innerText = "+";
+            show_list = true;
+        } else {
+            list.style.display = 'block';
+            listhead.innerText = "-";
+            show_list = false;
         }
 
     }
-
 
     startDemo();
 </script>
 
 <body>
-<h2 class="section_title">Module inventory:</h2>
-<div class="section">
-    <ul id="module_list">
+<h1 id="message">Starting</h1>
 
-    </ul>
-</div>
-<h2 class="section_title">Yocto-Color-V2:</h2>
-<div id="color_selector" class="section">
-    <button id="red" onclick="setColor(0xff0000)">Red</button>
-    <button id="green" onclick="setColor(0xff00)">Green</button>
-    <button id="blue" onclick="setColor(0xff)">Blue</button>
-    <button id="off" onclick="setColor(0)">Off</button>
-</div>
-<h2 class="section_title">Yocto-Meteo:</h2>
-<div id="meteo" class="section">
+
+<div id="bottom">
+    <h3>Settings</h3>
     <table>
-        <tr class="element">
-            <td class="icon"><img src="icons/temp_96.png" alt="Temperature"></td>
-            <td><span class="sensorvalue" id="temp">Offline</span></td>
-            <td class="icon"><img src="icons/hum_96.png" alt="Humidity"></td>
-            <td><span class="sensorvalue" id="hum">Offline</span></td>
-            <td class="icon"><img src="icons/cloud_96.png" alt="Pressure"></td>
-            <td><span class="sensorvalue" id="pres">Offline</span></td>
+        <tr>
+            <td class="label"><label for="url">Address of the Yocto-ColorLed-V2</label></td>
+            <td class="input"><input type="text" id="url" value="172.17.17.97"></td>
+        </tr>
+        <tr>
+            <td class="label"><label for="min_distance">Minimal distance:</label></td>
+            <td class="input"><span id="minval">400mm</span><input type="range" id="min_distance" min="1" max="1000"
+                                                                   value="400" onchange="settingsChanged();"></td>
+        </tr>
+        <tr>
+            <td class="label"><label for="max_distance">Maximal distance:</label></td>
+            <td class="input"><span id="maxval">600mm</span><input type="range" id="max_distance" min="1" max="1000"
+                                                                   value="600" onchange="settingsChanged();"></td>
+        </tr>
+        <tr>
+            <td class="label"><label for="min_distance">live value:</label></td>
+            <td class="input"><span id="live_val">400mm</span></td>
+        </tr>
+        <tr>
+            <td class="label" onclick="toggleList();"><span id="listhead">-</span> Module detected</td>
+            <td class="input">
+                <ul id="module_list" >
+                </ul>
+            </td>
         </tr>
     </table>
+
+
 </div>
 </body>
 </html>

@@ -1,13 +1,11 @@
 
-Electron application with support for Yoctopuce devices
-======================================================
+Telepresence
+============
 
-This is a simple application that lists the Yoctopuce devices connected on
-the USB ports. If a Yocto-Meteo is connected, the application shows the 
-live value of the sensors, and if a Yocto-Color-V2 is connected, you can 
-control the leds from the interface.
+This is a simple Electron application that lists detect if a person is in front of the 
+computer screen and change the color of the Yocto-Color-V2 leds accordingly.
 
-See more on [yoctopuce.com](https://www.yoctopuce.com/EN/article/using-yoctopuce-modules-with-electron)
+See more on [yoctopuce.com](https://www.yoctopuce.com/EN/article/simulating-the-presence-of-a-colleague)
 
 
 ## Test the application
